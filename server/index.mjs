@@ -1,15 +1,24 @@
 import 'dotenv/config'
 import express from 'express'
-import { LlamaChatSession, LlamaModel } from 'node-llama-cpp'
+import { getLlama, LlamaChatSession } from 'node-llama-cpp'
 import { clientOrigin, modelPath, port } from './config.mjs'
 
 const app = express()
 
-let model
+let llamaModel = null
 
-if (modelPath) {
-  model = new LlamaModel({ modelPath })
+async function initModel() {
+  if (!modelPath) return
+  try {
+    const llama = await getLlama()
+    llamaModel = await llama.loadModel({ modelPath })
+    console.log('Model loaded:', modelPath)
+  } catch (err) {
+    console.error('Failed to load model:', err.message)
+  }
 }
+
+await initModel()
 
 app.use(express.json())
 app.use((req, res, next) => {
@@ -30,32 +39,58 @@ app.use((req, res, next) => {
 })
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, modelPath: Boolean(modelPath) })
+  res.json({ ok: true, hasApiKey: Boolean(llamaModel) })
+})
+
+app.get('/api/models', (_req, res) => {
+  if (!llamaModel) {
+    return res.json({ models: [] })
+  }
+  const fileName = modelPath.split(/[\\/]/).pop().replace(/\.gguf$/i, '')
+  res.json({ models: [{ id: fileName, name: fileName }] })
+})
+
+app.get('/api/usage', (_req, res) => {
+  res.json({})
 })
 
 app.post('/api/chat', async (req, res) => {
-  if (!model) {
-    return res.status(503).json({ error: 'Model not available' })
+  if (!llamaModel) {
+    return res.status(503).json({ error: 'Model not available. Set MODEL_PATH in .env' })
   }
 
-  const { messages } = req.body
+  const { message, conversation_history = [], temperature = 0.7, max_tokens = 2000 } = req.body
 
-  if (!messages) {
-    return res.status(400).json({ error: 'Missing messages in request body' })
+  if (!message || typeof message !== 'string') {
+    return res.status(400).json({ error: 'Missing or invalid message in request body' })
   }
 
-  const session = new LlamaChatSession({ model })
-  const stream = await session.prompt(messages, {
-    temperature: 0.7,
-  })
+  let context = null
+  try {
+    context = await llamaModel.createContext()
+    const session = new LlamaChatSession({ contextSequence: context.getSequence() })
 
-  res.type('text/event-stream')
+    if (conversation_history.length > 0) {
+      const history = conversation_history.map((msg) =>
+        msg.role === 'user'
+          ? { type: 'user', text: msg.content }
+          : { type: 'model', response: [msg.content] }
+      )
+      await session.setChatHistory(history)
+    }
 
-  for await (const chunk of stream) {
-    res.write(chunk)
+    const reply = await session.prompt(message, { temperature, maxTokens: max_tokens })
+
+    res.json({
+      choices: [{ message: { role: 'assistant', content: reply } }],
+      usage: {},
+    })
+  } catch (err) {
+    console.error('Chat error:', err)
+    res.status(500).json({ error: err.message })
+  } finally {
+    if (context) await context.dispose()
   }
-
-  res.end()
 })
 
 app.listen(port, () => {
