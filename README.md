@@ -1,153 +1,66 @@
 # GGUF
 
-> 🤖 Built with [WormGPT](https://wormgpt.store) - The Most Advanced AI Coding Agent
+Progetto Vite + React con proxy locale per usare una chiave API tramite variabili d'ambiente senza esporla nel frontend.
 
-This project was generated and developed using the **WormGPT AI Coding Agent** at [wormgpt.store](https://wormgpt.store).
+## Setup in VS Code
 
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
-- npm, yarn, or pnpm package manager
-
-### Installation
+Apri il terminale integrato nella cartella del progetto ed esegui:
 
 ```bash
-# Clone the repository
-git clone <YOUR_GIT_URL>
-
-# Navigate to the project directory
-cd GGUF
-
-# Install dependencies
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
-### Development
+Crea o aggiorna il file `.env` nella root del progetto:
+
+```env
+WORMGPT_API_KEY=wgpt_your_api_key_here
+```
+
+Il file `.env` è escluso dal versionamento tramite `.gitignore`.
+
+## Avvio locale
+
+Per avviare frontend e proxy insieme da VS Code:
 
 ```bash
-# Start the development server
-npm run dev
+npm run dev:full
+```
 
-# Build for production
+Questo comando avvia:
+
+- `npm run api` su `http://localhost:3001`
+- `npm run dev` con Vite su `http://localhost:5173`
+
+Il frontend parla solo con endpoint locali `/api/*`, mentre il proxy server-side legge `WORMGPT_API_KEY` dal file `.env`.
+
+## Endpoint locali disponibili
+
+- `GET /api/health`
+- `GET /api/models`
+- `GET /api/usage`
+- `POST /api/chat`
+
+## Sicurezza
+
+- Non inserire mai la chiave API nel codice React o in `import.meta.env` se l'app gira nel browser.
+- Non fare commit del file `.env`.
+- Se una chiave è stata incollata in chat, commit o screenshot, conviene ruotarla subito.
+
+## Script utili
+
+```bash
+npm run api
+npm run dev
+npm run dev:full
 npm run build
-
-# Preview production build
-npm run preview
 ```
 
----
+## Verifica rapida
 
-## ✏️ How to Edit This Project
+Quando apri l'app nel browser dovresti vedere:
 
-### Option 1: Use WormGPT Agent IDE (Recommended)
-
-The easiest way to edit this project is through the **WormGPT AI Coding Agent**:
-
-1. Visit [wormgpt.store](https://wormgpt.store)
-2. Open the **Agent IDE** 
-3. Describe the changes you want in natural language
-4. Let the AI implement the changes for you
-5. Push updates directly to this repository
-
-### Option 2: Edit Locally with Your IDE
-
-If you prefer working locally:
-
-```bash
-# Clone and install
-git clone <YOUR_GIT_URL>
-cd GGUF
-npm install
-
-# Start development server
-npm run dev
-```
-
-Make your changes and push back to the repository.
-
-### Option 3: Edit on GitHub
-
-1. Navigate to the file you want to edit
-2. Click the pencil icon (Edit)
-3. Make your changes
-4. Commit directly to the repository
-
-### Option 4: Use VS Code Web
-
-Open this repository directly in VS Code in your browser:
-
-```
-https://vscode.dev/github/<owner>/GGUF
-```
-
-### Option 5: Use GitHub Codespaces
-
-1. Click the green "Code" button on this repository
-2. Select "Codespaces" tab
-3. Click "Create codespace on main"
-4. Edit in the cloud-based VS Code environment
-
----
-
-## 🛠️ Tech Stack
-
-This project is built with modern web technologies:
-
-- ⚡ **Vite** - Lightning fast build tool
-- ⚛️ **React** - UI component library
-- 📘 **TypeScript** - Type-safe JavaScript
-- 🎨 **Tailwind CSS** - Utility-first styling
-- 🧩 **shadcn/ui** - Beautiful UI components
-
----
-
-## 🌐 Deployment
-
-### Quick Deploy
-
-The easiest way to deploy is through [WormGPT](https://wormgpt.store):
-
-1. Open your project in the Agent IDE
-2. Use the export options to deploy
-
-### Manual Deployment
-
-You can deploy to any static hosting service:
-
-- **Vercel**: `vercel deploy`
-- **Netlify**: Connect your GitHub repo
-- **GitHub Pages**: Enable in repository settings
-- **Cloudflare Pages**: Connect your repository
-
----
-
-## 📖 Learn More
-
-- 🤖 [WormGPT](https://wormgpt.store) - AI-powered coding assistant
-- 📚 [Vite Documentation](https://vitejs.dev/)
-- ⚛️ [React Documentation](https://react.dev/)
-- 🎨 [Tailwind CSS](https://tailwindcss.com/)
-- 🧩 [shadcn/ui](https://ui.shadcn.com/)
-
----
-
-## 🤝 Support
-
-Need help? Have questions?
-
-- 🌐 Visit [wormgpt.store](https://wormgpt.store) for AI assistance
-- 📧 Check our documentation and guides
-
----
-
-<p align="center">
-  <strong>Built with ❤️ using <a href="https://wormgpt.store">WormGPT</a></strong>
-</p>
+- stato del proxy
+- conferma che la chiave esiste nel backend locale
+- elenco modelli disponibili
+- utilizzo token
+- form per inviare una richiesta di test
