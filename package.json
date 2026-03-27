@@ -1,0 +1,29 @@
+{
+  "name": "gguf",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "api": "node server/index.mjs",
+    "dev:full": "concurrently \"npm run api\" \"npm run dev\"",
+    "build": "tsc -b && vite build",
+    "start": "node server/index.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-llama-cpp": "^3.18.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.0"
+  }
+}
